@@ -27,7 +27,7 @@ public class PrimOpticalFlow
     // private readonly GFTTDetector _gfttDetector = new(25, 0.01, 1, 2, true);
     private readonly ORB _gfttDetector = new ORB(50);
 
-    public (int x, int y)? FindFlowNearest()
+    public (int x, int y)? FindMovementFromFlow()
     {
         if (_frameBuffer.Size < backlog)
         {

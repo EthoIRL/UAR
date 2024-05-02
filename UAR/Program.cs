@@ -42,7 +42,7 @@ static class Program
         
         OpticalFlow.AddFrame(gray);
 
-        var flow = OpticalFlow.FindFlowNearest();
+        var flow = OpticalFlow.FindMovementFromFlow();
         
         if (flow == null)
         {
