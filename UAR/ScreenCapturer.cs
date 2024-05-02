@@ -1,5 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
@@ -66,7 +70,7 @@ public class ScreenCapturer
 
         DataBox dataBox = device.ImmediateContext.MapSubresource(texture2D, 0, MapMode.Read, MapFlags.None);
 
-        ResourceRegion resourceRegion = new ResourceRegion(0, centerHeight, 0, centerWidth + _outputWidth, centerHeight + _outputHeight, 1);
+        ResourceRegion resourceRegion = new ResourceRegion(width - _outputWidth, centerHeight, 0, width + _outputWidth, centerHeight + _outputHeight, 1);
         
         var heightPartitioner = Partitioner.Create(0, _outputHeight);
         
