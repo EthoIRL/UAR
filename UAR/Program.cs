@@ -23,6 +23,8 @@ static class Program
     private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
     private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.0.190");
     private static readonly IPEndPoint EndPoint = new(Broadcast, 7483);
+
+    private static readonly RemoteState RemoteState = new();
     
     [SupportedOSPlatform("windows")]
     static void Main(string[] args)
@@ -49,8 +51,11 @@ static class Program
             return;
         }
         
-        var data = PreparePacket((short)flow.Value.x, (short)flow.Value.y);
-        Socket.Send(data);
+        if (RemoteState.LeftButton && RemoteState.RightButton)
+        {
+            var data = PreparePacket((short)flow.Value.x, (short)flow.Value.y);
+            Socket.Send(data);
+        }
     }
 
 
