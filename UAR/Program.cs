@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -11,12 +12,12 @@ namespace UAR;
 #pragma warning disable CA1416
 static class Program
 {
-    private static readonly (int width, int height) Resolution = (550, 725);
+    private static readonly (int width, int height) Resolution = (400, 200);
     
     private static readonly Image<Bgra, byte> LocalImage = new(Resolution.width, Resolution.height);
     private static IntPtr _imageData;
 
-    private static readonly PrimOpticalFlow OpticalFlow = new(3);
+    private static readonly PrimOpticalFlow OpticalFlow = new(4);
     private static readonly ScreenCapturer ScreenCapturer = new (0, 0, Resolution.width, Resolution.height);
 
     private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -48,7 +49,7 @@ static class Program
             return;
         }
         
-        var data = PreparePacket((short) flow.Value.x, (short) flow.Value.y);
+        var data = PreparePacket((short)flow.Value.x, (short)flow.Value.y);
         Socket.Send(data);
     }
 
