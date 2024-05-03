@@ -11,11 +11,11 @@ namespace UAR;
 public class PrimOpticalFlow
 {
     private readonly CircularBuffer<Image<Gray, byte>> _frameBuffer;
-    private readonly int backlog;
+    private readonly int _backlog;
 
     public PrimOpticalFlow(int frameBacklog)
     {
-        backlog = frameBacklog;
+        _backlog = frameBacklog;
         _frameBuffer = new CircularBuffer<Image<Gray, byte>>(frameBacklog);
     }
 
@@ -29,13 +29,13 @@ public class PrimOpticalFlow
 
     public (int x, int y)? FindMovementFromFlow()
     {
-        if (_frameBuffer.Size < backlog)
+        if (_frameBuffer.Size < _backlog)
         {
             return null;
         }
 
         var first = _frameBuffer[0];
-        var second = _frameBuffer[backlog-1];
+        var second = _frameBuffer[_backlog-1];
 
         if (first.Data == second.Data)
         {
@@ -71,7 +71,6 @@ public class PrimOpticalFlow
         }
 
         var deltaX = (int) Math.Floor(relativeX.Average());
-        
         var deltaY = relativeY.Average();
         // Crude fix for bouncing issue either way it only needs to move in one vertical direction
         if (deltaY < 0)

@@ -21,7 +21,7 @@ static class Program
     private static readonly ScreenCapturer ScreenCapturer = new (0, 0, Resolution.width, Resolution.height);
 
     private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-    private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.0.190");
+    private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.0.189");
     private static readonly IPEndPoint EndPoint = new(Broadcast, 7483);
 
     private static readonly RemoteState RemoteState = new();
@@ -46,16 +46,17 @@ static class Program
 
         var flow = OpticalFlow.FindMovementFromFlow();
         
-        if (flow == null)
+        if (flow != null && RemoteState.LeftButton && RemoteState.RightButton)
         {
-            return;
-        }
-        
-        if (RemoteState.LeftButton && RemoteState.RightButton)
-        {
-            var data = PreparePacket((short)flow.Value.x, (short)flow.Value.y);
+            short deltaX = (short) (flow.Value.x + RemoteState.x);
+            short deltaY = (short) (flow.Value.y + RemoteState.y);
+            
+            var data = PreparePacket(deltaX, deltaY);
             Socket.Send(data);
         }
+
+        RemoteState.x = 0;
+        RemoteState.y = 0;
     }
 
 

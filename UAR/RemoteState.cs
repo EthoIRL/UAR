@@ -10,6 +10,9 @@ public class RemoteState
     public bool MiddleButton;
     public bool FourButton;
     public bool FiveButton;
+
+    public int x;
+    public int y;
     
     private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.0.159");
     private readonly EndPoint _localEndpoint = new IPEndPoint(Broadcast, 7484);
@@ -22,7 +25,7 @@ public class RemoteState
             listener.Blocking = false;
             listener.Bind(_localEndpoint);
 
-            Span<byte> bytes = GC.AllocateArray<byte>(5, true);
+            Span<byte> bytes = GC.AllocateArray<byte>(9, true);
         
             while (true)
             {
@@ -37,6 +40,9 @@ public class RemoteState
                         MiddleButton = bytes[2] > 0;
                         FourButton = bytes[3] > 0;
                         FiveButton = bytes[4] > 0;
+                        
+                        x = (short) (bytes[5] | bytes[6] << 8);
+                        y = (short) (bytes[7] | bytes[8] << 8);
                     }
                 }
             }
