@@ -27,6 +27,9 @@ static class Program
     private static readonly IPEndPoint EndPoint = new(Broadcast, 7483);
 
     private static readonly RemoteState RemoteState = new();
+
+    private static readonly bool TapFireFix = true;
+    private static bool _allowBypass;
     
     [SupportedOSPlatform("windows")]
     static void Main(string[] args)
@@ -52,8 +55,10 @@ static class Program
 
         var flow = OpticalFlow.FindMovementFromFlow();
         
-        if (flow != null && RemoteState.LeftButton && RemoteState.RightButton)
+        if (flow != null && (RemoteState.LeftButton && RemoteState.RightButton || _allowBypass))
         {
+            _allowBypass = !_allowBypass && TapFireFix;
+            
             short deltaX = (short) (flow.Value.x + RemoteState.X);
             short deltaY = (short) (flow.Value.y + RemoteState.Y);
             
