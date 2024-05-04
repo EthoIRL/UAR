@@ -19,7 +19,7 @@ static class Program
     private static readonly Image<Bgra, byte> LocalImage = new(Resolution.width, Resolution.height);
     private static IntPtr _imageData;
 
-    private static readonly NvidiaOpticalFlow OpticalFlow = new(8);
+    private static readonly NvidiaOpticalFlow OpticalFlow = new(4);
     private static readonly ScreenCapturer ScreenCapturer = new (0, 0, Resolution.width, Resolution.height);
 
     private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -28,7 +28,7 @@ static class Program
 
     private static readonly RemoteState RemoteState = new();
 
-    private static readonly bool TapFireFix = true;
+    private static readonly bool TapFireFix = false;
     private static bool _allowBypass;
     
     [SupportedOSPlatform("windows")]

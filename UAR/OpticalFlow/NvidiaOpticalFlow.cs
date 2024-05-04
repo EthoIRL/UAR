@@ -10,6 +10,7 @@ public class NvidiaOpticalFlow : GenericOpticalFlow<GpuMat>
     private GpuMat _result = new();
     private GpuMat _floatMat = new();
     private Mat _flowMat = new();
+    private Matrix<float>? _matrixFlow;
 
     private double _overflowX;
     private double _overflowY;
@@ -37,21 +38,11 @@ public class NvidiaOpticalFlow : GenericOpticalFlow<GpuMat>
 
         _floatMat.Download(_flowMat);
         
-        var matSplit = _flowMat.Split();
-        var flowXMatrix = matSplit[0].GetData();
-        var flowYMatrix = matSplit[1].GetData();
+        _matrixFlow ??= new Matrix<float>(_flowMat.Rows, _flowMat.Cols, _flowMat.NumberOfChannels, _flowMat.DataPointer, 0);
+        var matrixSplit = _matrixFlow.Split();
 
-        double sumX = 0;
-        double sumY = 0;
-            
-        for (int x = 0; x < _flowMat.Rows; x++)
-        {
-            for (int y = 0; y < _flowMat.Rows; y++)
-            {
-                sumX += (Single) flowXMatrix.GetValue(x, y)!;
-                sumY += (Single) flowYMatrix.GetValue(x, y)!;
-            }
-        }
+        double sumX = matrixSplit[0].Sum;
+        double sumY = matrixSplit[1].Sum;
 
         double avgX = sumX / (_flowMat.Rows * _flowMat.Cols);
         double avgY = sumY / (_flowMat.Rows * _flowMat.Cols);
