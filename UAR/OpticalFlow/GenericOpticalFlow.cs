@@ -1,0 +1,20 @@
+﻿using CircularBuffer;
+
+namespace UAR;
+
+public abstract class GenericOpticalFlow<T> where T : class
+{
+    public readonly CircularBuffer<T> FrameBuffer;
+    public readonly int Backlog;
+
+    public GenericOpticalFlow(int frameBacklog)
+    {
+        Backlog = frameBacklog;
+        FrameBuffer = new CircularBuffer<T>(frameBacklog);
+    }
+
+    public void AddFrame(T frame)
+    {
+        FrameBuffer.PushFront(frame);
+    }
+}

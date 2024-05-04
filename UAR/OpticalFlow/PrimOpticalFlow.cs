@@ -1,48 +1,28 @@
-﻿using System;
-using System.Drawing;
-using CircularBuffer;
+﻿using System.Drawing;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Features2D;
 using Emgu.CV.Structure;
+using Size = System.Drawing.Size;
 
-namespace UAR;
+namespace UAR.OpticalFlow;
 
-public class PrimOpticalFlow
+public class PrimOpticalFlow : GenericOpticalFlow<Mat>
 {
-    private readonly CircularBuffer<Image<Gray, byte>> _frameBuffer;
-    private readonly int _backlog;
-
-    public PrimOpticalFlow(int frameBacklog)
-    {
-        _backlog = frameBacklog;
-        _frameBuffer = new CircularBuffer<Image<Gray, byte>>(frameBacklog);
-    }
-
-    public void AddFrame(Image<Gray, byte> frame)
-    {
-        _frameBuffer.PushFront(frame);
-    }
-
-    // private readonly GFTTDetector _gfttDetector = new(25, 0.01, 1, 2, true);
-    private readonly ORB _gfttDetector = new ORB(50);
+    // private readonly GFTTDetector _detector = new(25, 0.01, 1, 2, true);
+    private readonly ORB _detector = new ORB(50);
 
     public (int x, int y)? FindMovementFromFlow()
     {
-        if (_frameBuffer.Size < _backlog)
+        if (FrameBuffer.Size < Backlog)
         {
             return null;
         }
 
-        var first = _frameBuffer[0];
-        var second = _frameBuffer[_backlog-1];
+        var first = FrameBuffer[0];
+        var second = FrameBuffer[Backlog-1];
 
-        if (first.Data == second.Data)
-        {
-            return null;
-        }
-
-        var points = _gfttDetector.Detect(second);
+        var points = _detector.Detect(second);
         
         if (points.Length == 0)
         {
@@ -80,5 +60,9 @@ public class PrimOpticalFlow
         }
 
         return (deltaX, (int) Math.Round(deltaY));
+    }
+
+    public PrimOpticalFlow(int frameBacklog) : base(frameBacklog)
+    {
     }
 }
