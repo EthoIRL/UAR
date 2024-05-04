@@ -3,3 +3,6 @@ publish
 
 bin
 obj
+libs
+
+*.DotSettings.user
