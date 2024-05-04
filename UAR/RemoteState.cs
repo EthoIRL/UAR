@@ -11,8 +11,8 @@ public class RemoteState
     public bool FourButton;
     public bool FiveButton;
 
-    public int x;
-    public int y;
+    public int X;
+    public int Y;
     
     private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.0.159");
     private readonly EndPoint _localEndpoint = new IPEndPoint(Broadcast, 7484);
@@ -41,8 +41,8 @@ public class RemoteState
                         FourButton = bytes[3] > 0;
                         FiveButton = bytes[4] > 0;
                         
-                        x = (short) (bytes[5] | bytes[6] << 8);
-                        y = (short) (bytes[7] | bytes[8] << 8);
+                        X = (short) (bytes[5] | bytes[6] << 8);
+                        Y = (short) (bytes[7] | bytes[8] << 8);
                     }
                 }
             }

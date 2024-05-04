@@ -48,15 +48,15 @@ static class Program
         
         if (flow != null && RemoteState.LeftButton && RemoteState.RightButton)
         {
-            short deltaX = (short) (flow.Value.x + RemoteState.x);
-            short deltaY = (short) (flow.Value.y + RemoteState.y);
+            short deltaX = (short) (flow.Value.x + RemoteState.X);
+            short deltaY = (short) (flow.Value.y + RemoteState.Y);
             
             var data = PreparePacket(deltaX, deltaY);
             Socket.Send(data);
         }
 
-        RemoteState.x = 0;
-        RemoteState.y = 0;
+        RemoteState.X = 0;
+        RemoteState.Y = 0;
     }
 
 
