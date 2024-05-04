@@ -7,7 +7,7 @@ public abstract class GenericOpticalFlow<T> where T : class
     public readonly CircularBuffer<T> FrameBuffer;
     public readonly int Backlog;
 
-    public GenericOpticalFlow(int frameBacklog)
+    public GenericOpticalFlow(int frameBacklog = 2)
     {
         Backlog = frameBacklog;
         FrameBuffer = new CircularBuffer<T>(frameBacklog);
