@@ -4,8 +4,10 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Emgu.CV;
+using Emgu.CV.Cuda;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
+using UAR.OpticalFlow;
 
 namespace UAR;
 
@@ -17,7 +19,7 @@ static class Program
     private static readonly Image<Bgra, byte> LocalImage = new(Resolution.width, Resolution.height);
     private static IntPtr _imageData;
 
-    private static readonly PrimOpticalFlow OpticalFlow = new(4);
+    private static readonly NvidiaOpticalFlow OpticalFlow = new(4);
     private static readonly ScreenCapturer ScreenCapturer = new (0, 0, Resolution.width, Resolution.height);
 
     private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -39,8 +41,12 @@ static class Program
 
     public static void HandleImage()
     {
-        Image<Gray, byte> gray = new Image<Gray, byte>(LocalImage.Width, LocalImage.Height);
-        CvInvoke.CvtColor(LocalImage, gray, ColorConversion.Bgra2Gray);
+        // Mat gray = new Mat();
+        // CvInvoke.CvtColor(LocalImage, gray, ColorConversion.Bgra2Gray);
+        
+        GpuMat gpuImage = new GpuMat(LocalImage);    
+        GpuMat gray = new GpuMat(LocalImage.Rows, LocalImage.Cols, DepthType.Cv8U, 1);
+        CudaInvoke.CvtColor(gpuImage, gray, ColorConversion.Bgra2Gray);
         
         OpticalFlow.AddFrame(gray);
 
