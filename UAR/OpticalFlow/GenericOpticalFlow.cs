@@ -1,6 +1,6 @@
 ﻿using CircularBuffer;
 
-namespace UAR;
+namespace UAR.OpticalFlow;
 
 public abstract class GenericOpticalFlow<T> where T : class
 {

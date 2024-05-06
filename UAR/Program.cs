@@ -15,12 +15,12 @@ namespace UAR;
 static class Program
 {
     private static readonly (int width, int height) Resolution = (400, 200);
-    
+
     private static readonly Image<Bgra, byte> LocalImage = new(Resolution.width, Resolution.height);
     private static IntPtr _imageData;
 
-    private static readonly NvidiaOpticalFlow OpticalFlow = new(4);
-    private static readonly ScreenCapturer ScreenCapturer = new (0, 0, Resolution.width, Resolution.height);
+    private static readonly NvidiaOpticalFlow OpticalFlow = new(3);
+    private static readonly ScreenCapturer ScreenCapturer = new(0, 0, Resolution.width, Resolution.height);
 
     private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
     private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.0.189");
@@ -30,38 +30,40 @@ static class Program
 
     private static readonly bool TapFireFix = false;
     private static bool _allowBypass;
-    
+
     [SupportedOSPlatform("windows")]
     static void Main(string[] args)
     {
         Socket.Connect(EndPoint);
-        
+
         GCHandle pinnedArray = GCHandle.Alloc(LocalImage.Data, GCHandleType.Pinned);
         _imageData = pinnedArray.AddrOfPinnedObject();
-        
+
         ScreenCapturer.StartCapture(_imageData, LocalImage.MIplImage.WidthStep);
     }
+
+    private static readonly GpuMat GpuImage = new();
 
     public static void HandleImage()
     {
         // Mat gray = new Mat();
         // CvInvoke.CvtColor(LocalImage, gray, ColorConversion.Bgra2Gray);
-        
-        GpuMat gpuImage = new GpuMat(LocalImage);    
+
+        GpuImage.Upload(LocalImage);
         GpuMat gray = new GpuMat(LocalImage.Rows, LocalImage.Cols, DepthType.Cv8U, 1);
-        CudaInvoke.CvtColor(gpuImage, gray, ColorConversion.Bgra2Gray);
-        
+        CudaInvoke.CvtColor(GpuImage, gray, ColorConversion.Bgra2Gray);
+
         OpticalFlow.AddFrame(gray);
 
         var flow = OpticalFlow.FindMovementFromFlow();
-        
+
         if (flow != null && (RemoteState.LeftButton && RemoteState.RightButton || _allowBypass))
         {
             _allowBypass = !_allowBypass && TapFireFix;
             
             short deltaX = (short) (flow.Value.x + RemoteState.X);
             short deltaY = (short) (flow.Value.y + RemoteState.Y);
-            
+
             var data = PreparePacket(deltaX, deltaY);
             Socket.Send(data);
         }
