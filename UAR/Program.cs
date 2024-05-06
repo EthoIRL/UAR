@@ -18,6 +18,9 @@ static class Program
 
     private static readonly Image<Bgra, byte> LocalImage = new(Resolution.width, Resolution.height);
     private static IntPtr _imageData;
+    
+    private static readonly GpuMat GpuImage = new();
+    private static int _hasFrames;
 
     private static readonly NvidiaOpticalFlow OpticalFlow = new(3);
     private static readonly ScreenCapturer ScreenCapturer = new(0, 0, Resolution.width, Resolution.height);
@@ -42,19 +45,21 @@ static class Program
         ScreenCapturer.StartCapture(_imageData, LocalImage.MIplImage.WidthStep);
     }
 
-    private static readonly GpuMat GpuImage = new();
-
     public static void HandleImage()
     {
-        // Mat gray = new Mat();
-        // CvInvoke.CvtColor(LocalImage, gray, ColorConversion.Bgra2Gray);
+        // CvInvoke.CvtColor(LocalImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
 
         GpuImage.Upload(LocalImage);
-        GpuMat gray = new GpuMat(LocalImage.Rows, LocalImage.Cols, DepthType.Cv8U, 1);
-        CudaInvoke.CvtColor(GpuImage, gray, ColorConversion.Bgra2Gray);
+        CudaInvoke.CvtColor(GpuImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
 
-        OpticalFlow.AddFrame(gray);
+        OpticalFlow.AddFrame(OpticalFlow.FrameBuffer[^1]);
 
+        if (_hasFrames < 3)
+        {
+            _hasFrames++;
+            return;
+        }
+        
         var flow = OpticalFlow.FindMovementFromFlow();
 
         if (flow != null && (RemoteState.LeftButton && RemoteState.RightButton || _allowBypass))

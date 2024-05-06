@@ -14,13 +14,8 @@ public class PrimOpticalFlow : GenericOpticalFlow<Mat>
 
     public (int x, int y)? FindMovementFromFlow()
     {
-        if (FrameBuffer.Size < Backlog)
-        {
-            return null;
-        }
-
         var first = FrameBuffer[0];
-        var second = FrameBuffer[Backlog-1];
+        var second = FrameBuffer[^1];
 
         var points = _detector.Detect(second);
         

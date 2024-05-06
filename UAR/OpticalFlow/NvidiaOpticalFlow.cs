@@ -17,19 +17,8 @@ public class NvidiaOpticalFlow : GenericOpticalFlow<GpuMat>
     
     public (int x, int y)? FindMovementFromFlow()
     {
-        if (FrameBuffer.Size < Backlog)
-        {
-            return null;
-        }
-
-        GpuMat first = FrameBuffer[0]!;
-        GpuMat second = FrameBuffer[Backlog - 1]!;
-
-        if (first == second)
-        {
-            second.Dispose();
-            return null;
-        }
+        var first = FrameBuffer[0];
+        var second = FrameBuffer[^1];
 
         _nvopf ??= new NvidiaOpticalFlow_2_0(first.Size, NvidiaOpticalFlow_2_0.PerfLevel.Slow, NvidiaOpticalFlow_2_0.OutputVectorGridSize.Size4);
         
@@ -59,8 +48,6 @@ public class NvidiaOpticalFlow : GenericOpticalFlow<GpuMat>
 
         _overflowX += avgX - intAvgX;
         _overflowY += avgY - intAvgY;
-
-        second.Dispose();
 
         return (-intAvgX, -intAvgY);
     }
