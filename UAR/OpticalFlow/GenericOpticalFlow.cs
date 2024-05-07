@@ -5,7 +5,7 @@ public abstract class GenericOpticalFlow<T> where T : class, new()
     public readonly T[] FrameBuffer;
     public readonly int Backlog;
 
-    public GenericOpticalFlow(int frameBacklog = 2)
+    protected GenericOpticalFlow(int frameBacklog = 2)
     {
         Backlog = frameBacklog;
         FrameBuffer = new T[frameBacklog];
