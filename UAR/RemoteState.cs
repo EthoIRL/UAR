@@ -14,7 +14,7 @@ public class RemoteState
     public int X;
     public int Y;
     
-    private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.0.159");
+    private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.68.57");
     private readonly EndPoint _localEndpoint = new IPEndPoint(Broadcast, 7484);
 
     public RemoteState()

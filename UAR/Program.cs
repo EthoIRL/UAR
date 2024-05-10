@@ -22,11 +22,11 @@ static class Program
     private static readonly GpuMat GpuImage = new();
     private static int _hasFrames;
 
-    private static readonly NvidiaOpticalFlow OpticalFlow = new(3);
+    private static readonly PrimOpticalFlow OpticalFlow = new(3);
     private static readonly ScreenCapturer ScreenCapturer = new(0, 0, Resolution.width, Resolution.height);
 
     private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-    private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.0.189");
+    private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.68.53");
     private static readonly IPEndPoint EndPoint = new(Broadcast, 7483);
 
     private static readonly RemoteState RemoteState = new();
@@ -47,10 +47,10 @@ static class Program
 
     public static void HandleImage()
     {
-        // CvInvoke.CvtColor(LocalImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
+        CvInvoke.CvtColor(LocalImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
 
-        GpuImage.Upload(LocalImage);
-        CudaInvoke.CvtColor(GpuImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
+        // GpuImage.Upload(LocalImage);
+        // CudaInvoke.CvtColor(GpuImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
 
         OpticalFlow.AddFrame(OpticalFlow.FrameBuffer[^1]);
 
