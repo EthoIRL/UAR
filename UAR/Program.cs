@@ -22,7 +22,7 @@ static class Program
     private static readonly GpuMat GpuImage = new();
     private static int _hasFrames;
 
-    private static readonly PrimOpticalFlow OpticalFlow = new(3);
+    private static readonly PyrLkOpticalFlow OpticalFlow = new(3);
     private static readonly ScreenCapturer ScreenCapturer = new(0, 0, Resolution.width, Resolution.height);
 
     private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);

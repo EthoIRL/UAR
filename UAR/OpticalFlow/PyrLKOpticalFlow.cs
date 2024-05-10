@@ -7,7 +7,7 @@ using Size = System.Drawing.Size;
 
 namespace UAR.OpticalFlow;
 
-public class PrimOpticalFlow : GenericOpticalFlow<Mat>
+public class PyrLkOpticalFlow : GenericOpticalFlow<Mat>
 {
     private readonly ORB _detector = new(50);
 
@@ -59,7 +59,7 @@ public class PrimOpticalFlow : GenericOpticalFlow<Mat>
         return (deltaX, deltaY);
     }
 
-    public PrimOpticalFlow(int frameBacklog) : base(frameBacklog)
+    public PyrLkOpticalFlow(int frameBacklog) : base(frameBacklog)
     {
     }
 }
