@@ -19,7 +19,7 @@ static class Program
     private static readonly Image<Bgra, byte> LocalImage = new(Resolution.width, Resolution.height);
     private static IntPtr _imageData;
     
-    private static readonly GpuMat GpuImage = new();
+    private static GpuMat? _gpuImage;
     private static int _hasFrames;
 
     private static readonly PyrLkOpticalFlow OpticalFlow = new(3);
@@ -37,6 +37,8 @@ static class Program
     [SupportedOSPlatform("windows")]
     static void Main(string[] args)
     {
+        Console.WriteLine($"Optical Flow: {OpticalFlow.GetType().Name} | Backlog: {OpticalFlow.Backlog} | Gpu: {OpticalFlow.isGpuMat}");
+        
         Socket.Connect(EndPoint);
 
         GCHandle pinnedArray = GCHandle.Alloc(LocalImage.Data, GCHandleType.Pinned);
@@ -47,10 +49,17 @@ static class Program
 
     public static void HandleImage()
     {
-        CvInvoke.CvtColor(LocalImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
-
-        // GpuImage.Upload(LocalImage);
-        // CudaInvoke.CvtColor(GpuImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
+        if (OpticalFlow.isGpuMat)
+        {
+            _gpuImage ??= new();
+            
+            _gpuImage.Upload(LocalImage);
+            CudaInvoke.CvtColor(_gpuImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
+        }
+        else
+        {
+            CvInvoke.CvtColor(LocalImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
+        }
 
         OpticalFlow.AddFrame(OpticalFlow.FrameBuffer[^1]);
 
