@@ -11,9 +11,6 @@ public class NvidiaOpticalFlow : GenericOpticalFlow<GpuMat>
     private GpuMat _floatMat = new();
     private Mat _flowMat = new();
     private Matrix<float>? _matrixFlow;
-
-    private double _overflowX;
-    private double _overflowY;
     
     public (int x, int y)? FindMovementFromFlow()
     {
@@ -33,23 +30,9 @@ public class NvidiaOpticalFlow : GenericOpticalFlow<GpuMat>
         double avgX = matrixSplit[0].Sum / (_flowMat.Rows * _flowMat.Cols);
         double avgY = matrixSplit[1].Sum / (_flowMat.Rows * _flowMat.Cols);
 
+        var intAvg = HandleOverflow(avgX, avgY);
 
-        int intOverflowX = (int) Math.Floor(_overflowX);
-        int intOverflowY = (int) Math.Floor(_overflowY);
-
-        avgX += intOverflowX;
-        avgY += intOverflowY;
-
-        _overflowX -= intOverflowX;
-        _overflowY -= intOverflowY;
-
-        var intAvgX = (int) Math.Floor(avgX);
-        var intAvgY = (int) Math.Round(avgY);
-
-        _overflowX += avgX - intAvgX;
-        _overflowY += avgY - intAvgY;
-
-        return (-intAvgX, -intAvgY);
+        return (-intAvg.x, -intAvg.y);
     }
 
     public NvidiaOpticalFlow(int frameBacklog) : base(frameBacklog)

@@ -14,9 +14,6 @@ public class PyrLkOpticalFlow : GenericOpticalFlow<Mat>
     private readonly Size _pyrlkSize = new(50, 50);
     private readonly int _pyrlkLevel = 14;
     private readonly MCvTermCriteria _pyrlkCrit = new(0.0);
-    
-    private double _overflowX;
-    private double _overflowY;
 
     public (int x, int y)? FindMovementFromFlow()
     {
@@ -56,10 +53,12 @@ public class PyrLkOpticalFlow : GenericOpticalFlow<Mat>
             totalY += secondFeatures[i].Y - prevCorners[i].Y;
         }
         
-        var deltaX = (int) Math.Floor(totalX / divisor);
-        var deltaY = (int) Math.Round(totalY / divisor);
+        var avgX = totalX / divisor;
+        var avgY = totalY / divisor;
 
-        return (deltaX, deltaY);
+        var intAvg = HandleOverflow(avgX, avgY);
+        
+        return (intAvg.x, intAvg.y);
     }
 
     public PyrLkOpticalFlow(int frameBacklog) : base(frameBacklog)
