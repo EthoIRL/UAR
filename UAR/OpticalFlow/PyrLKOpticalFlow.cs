@@ -9,7 +9,7 @@ namespace UAR.OpticalFlow;
 
 public class PyrLkOpticalFlow : GenericOpticalFlow<Mat>
 {
-    private readonly ORB _detector = new(50);
+    private readonly FastFeatureDetector _detector = new(100);
 
     private readonly Size _pyrlkSize = new(50, 50);
     private readonly int _pyrlkLevel = 14;
