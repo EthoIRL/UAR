@@ -11,9 +11,12 @@ public class PyrLkOpticalFlow : GenericOpticalFlow<Mat>
 {
     private readonly ORB _detector = new(50);
 
-    private readonly Size _pyrlkSize = new(100, 100);
-    private readonly int _pyrlkLevel = 7;
+    private readonly Size _pyrlkSize = new(50, 50);
+    private readonly int _pyrlkLevel = 14;
     private readonly MCvTermCriteria _pyrlkCrit = new(0.0);
+    
+    private double _overflowX;
+    private double _overflowY;
 
     public (int x, int y)? FindMovementFromFlow()
     {

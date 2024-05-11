@@ -14,7 +14,7 @@ namespace UAR;
 #pragma warning disable CA1416
 static class Program
 {
-    private static readonly (int width, int height) Resolution = (400, 200);
+    private static readonly (int width, int height) Resolution = (600, 200);
 
     private static readonly Image<Bgra, byte> LocalImage = new(Resolution.width, Resolution.height);
     private static IntPtr _imageData;
@@ -22,7 +22,7 @@ static class Program
     private static GpuMat? _gpuImage;
     private static int _hasFrames;
 
-    private static readonly PyrLkOpticalFlow OpticalFlow = new(3);
+    private static readonly PyrLkOpticalFlow OpticalFlow = new(4);
     private static readonly ScreenCapturer ScreenCapturer = new(0, 0, Resolution.width, Resolution.height);
 
     private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -37,7 +37,7 @@ static class Program
     [SupportedOSPlatform("windows")]
     static void Main(string[] args)
     {
-        Console.WriteLine($"Optical Flow: {OpticalFlow.GetType().Name} | Backlog: {OpticalFlow.Backlog} | Gpu: {OpticalFlow.isGpuMat}");
+        Console.WriteLine($"Optical Flow: {OpticalFlow.GetType().Name} | Backlog: {OpticalFlow.Backlog} | Gpu: {OpticalFlow.IsGpuMat}");
         
         Socket.Connect(EndPoint);
 
@@ -49,7 +49,7 @@ static class Program
 
     public static void HandleImage()
     {
-        if (OpticalFlow.isGpuMat)
+        if (OpticalFlow.IsGpuMat)
         {
             _gpuImage ??= new();
             
