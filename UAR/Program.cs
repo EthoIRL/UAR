@@ -29,7 +29,7 @@ static class Program
     private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.68.53");
     private static readonly IPEndPoint EndPoint = new(Broadcast, 7483);
 
-    private static readonly RemoteState RemoteState = new();
+    private static RemoteState _remoteState = null!;
 
     private static readonly bool TapFireFix = false;
     private static bool _allowBypass;
@@ -37,7 +37,11 @@ static class Program
     [SupportedOSPlatform("windows")]
     static void Main(string[] args)
     {
-        Console.WriteLine($"Optical Flow: {OpticalFlow.GetType().Name} | Backlog: {OpticalFlow.Backlog} | Gpu: {OpticalFlow.IsGpuMat}");
+        var hostAddress = Dns.GetHostEntry(Dns.GetHostName()).AddressList[^1];
+        Console.WriteLine($"Optical Flow: {OpticalFlow.GetType().Name} | Backlog: {OpticalFlow.Backlog} | Gpu: {OpticalFlow.IsGpuMat} | Host: {hostAddress}");
+
+        _remoteState = new RemoteState(hostAddress);
+        new Thread(() => _remoteState.StartListening()).Start();
         
         Socket.Connect(EndPoint);
 
@@ -71,19 +75,19 @@ static class Program
         
         var flow = OpticalFlow.FindMovementFromFlow();
 
-        if (flow != null && (RemoteState.LeftButton && RemoteState.RightButton || _allowBypass))
+        if (flow != null && (_remoteState.LeftButton && _remoteState.RightButton || _allowBypass))
         {
             _allowBypass = !_allowBypass && TapFireFix;
             
-            short deltaX = (short) (flow.Value.x + RemoteState.X);
-            short deltaY = (short) (flow.Value.y + RemoteState.Y);
+            short deltaX = (short) (flow.Value.x + _remoteState.X);
+            short deltaY = (short) (flow.Value.y + _remoteState.Y);
 
             var data = PreparePacket(deltaX, deltaY);
             Socket.Send(data);
         }
 
-        RemoteState.X = 0;
-        RemoteState.Y = 0;
+        _remoteState.X = 0;
+        _remoteState.Y = 0;
     }
 
 

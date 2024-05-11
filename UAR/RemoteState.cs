@@ -13,39 +13,40 @@ public class RemoteState
 
     public int X;
     public int Y;
-    
-    private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.68.58");
-    private readonly EndPoint _localEndpoint = new IPEndPoint(Broadcast, 7484);
 
-    public RemoteState()
+    private readonly Socket _listener;
+
+    public RemoteState(IPAddress hostAddress)
     {
-        new Thread(() =>
+        var localEndpoint = new IPEndPoint(hostAddress, 7484);
+
+        _listener = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        _listener.Blocking = false;
+        _listener.Bind(localEndpoint);
+    }
+
+    public void StartListening()
+    {
+        Span<byte> bytes = GC.AllocateArray<byte>(9, true);
+
+        while (true)
         {
-            using Socket listener = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            listener.Blocking = false;
-            listener.Bind(_localEndpoint);
-
-            Span<byte> bytes = GC.AllocateArray<byte>(9, true);
-        
-            while (true)
+            if (_listener.Available != 0)
             {
-                if (listener.Available != 0)
-                {
-                    var received = listener.Receive(bytes);
+                var received = _listener.Receive(bytes);
 
-                    if (received != 0)
-                    {
-                        LeftButton = bytes[0] > 0;
-                        RightButton = bytes[1] > 0;
-                        MiddleButton = bytes[2] > 0;
-                        FourButton = bytes[3] > 0;
-                        FiveButton = bytes[4] > 0;
-                        
-                        X = (short) (bytes[5] | bytes[6] << 8);
-                        Y = (short) (bytes[7] | bytes[8] << 8);
-                    }
+                if (received != 0)
+                {
+                    LeftButton = bytes[0] > 0;
+                    RightButton = bytes[1] > 0;
+                    MiddleButton = bytes[2] > 0;
+                    FourButton = bytes[3] > 0;
+                    FiveButton = bytes[4] > 0;
+
+                    X = (short) (bytes[5] | bytes[6] << 8);
+                    Y = (short) (bytes[7] | bytes[8] << 8);
                 }
             }
-        }).Start();
+        }
     }
 }
