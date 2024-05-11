@@ -9,8 +9,8 @@ public abstract class GenericOpticalFlow<T> where T : class, new()
 
     public readonly bool IsGpuMat;
 
-    private double _overflowX;
-    private double _overflowY;
+    public double OverflowX;
+    public double OverflowY;
 
     protected GenericOpticalFlow(int frameBacklog = 2)
     {
@@ -37,20 +37,20 @@ public abstract class GenericOpticalFlow<T> where T : class, new()
     
     protected (int x, int y) HandleOverflow(double x, double y)
     {
-        int intOverflowX = (int) Math.Floor(_overflowX);
-        int intOverflowY = (int) Math.Floor(_overflowY);
+        int intOverflowX = (int) Math.Floor(OverflowX);
+        int intOverflowY = (int) Math.Floor(OverflowY);
     
         x += intOverflowX;
         y += intOverflowY;
     
-        _overflowX -= intOverflowX;
-        _overflowY -= intOverflowY;
+        OverflowX -= intOverflowX;
+        OverflowY -= intOverflowY;
     
         var intAvgX = (int) Math.Floor(x);
         var intAvgY = (int) Math.Floor(y);
     
-        _overflowX += x - intAvgX;
-        _overflowY += y - intAvgY;
+        OverflowX += x - intAvgX;
+        OverflowY += y - intAvgY;
     
         return (intAvgX, intAvgY);
     }

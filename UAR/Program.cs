@@ -85,6 +85,11 @@ static class Program
             var data = PreparePacket(deltaX, deltaY);
             Socket.Send(data);
         }
+        else
+        {
+            OpticalFlow.OverflowX = 0;
+            OpticalFlow.OverflowY = 0;
+        }
 
         _remoteState.X = 0;
         _remoteState.Y = 0;
