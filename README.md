@@ -1,5 +1,5 @@
 ﻿# UAR
-Windows program that attempts to reverse recoil in fps games using computer vision optical flow.
+Windows program that attempts to reverse recoil in fps games using [optical flow](https://en.wikipedia.org/wiki/Optical_flow).
 
 ## Pros
 * No need to input individual gun recoil settings manually
@@ -19,6 +19,12 @@ Windows program that attempts to reverse recoil in fps games using computer visi
 * Helious with (RemoteState & Input Server modules built) or bring your own mouse input handling.
 * Modern Cpu (Mid range and above from the last 5 years should suffice)
 * **NVIDIA** GPU is optional (**Does not benefit performance**)
+
+## Performance
+Screenshotting takes on average 0.05ms @ 600x200 resolution
+Optical flow modules
+  - PyrLK: 0.8ms +/-0.4ms (Sparse, 5800x3d)
+  - Nvidia 2.0: 2.0ms +/-0.2ms (Dense, 3060 Ti)
 
 ## Best games
 - [x] Apex Legends
