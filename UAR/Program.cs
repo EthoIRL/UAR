@@ -11,7 +11,6 @@ using UAR.OpticalFlow;
 
 namespace UAR;
 
-#pragma warning disable CA1416
 static class Program
 {
     private static readonly (int width, int height) Resolution = (600, 200);

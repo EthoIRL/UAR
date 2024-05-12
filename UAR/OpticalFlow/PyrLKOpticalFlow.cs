@@ -11,8 +11,8 @@ public class PyrLkOpticalFlow : GenericOpticalFlow<Mat>
 {
     private readonly FastFeatureDetector _detector = new(100);
 
-    private readonly Size _pyrlkSize = new(50, 50);
-    private readonly int _pyrlkLevel = 14;
+    private readonly Size _pyrlkSize = new(75, 75);
+    private readonly int _pyrlkLevel = 0;
     private readonly MCvTermCriteria _pyrlkCrit = new(0.0);
 
     public (int x, int y)? FindMovementFromFlow()

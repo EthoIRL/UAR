@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using SharpDX;
 using SharpDX.Direct3D11;
 using SharpDX.DXGI;
@@ -13,7 +10,6 @@ using MapFlags = SharpDX.Direct3D11.MapFlags;
 
 namespace UAR;
 
-#pragma warning disable CA1416
 public class ScreenCapturer
 {
     private static readonly Stopwatch ScWatch = new();
