@@ -66,7 +66,7 @@ static class Program
 
         OpticalFlow.AddFrame(OpticalFlow.FrameBuffer[^1]);
 
-        if (_hasFrames < 3)
+        if (_hasFrames < OpticalFlow.Backlog)
         {
             _hasFrames++;
             return;
