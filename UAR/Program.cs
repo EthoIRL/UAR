@@ -36,9 +36,14 @@ static class Program
     [SupportedOSPlatform("windows")]
     static void Main(string[] args)
     {
-        var hostAddress = Dns.GetHostEntry(Dns.GetHostName()).AddressList[^1];
+        var hostAddress = Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(ip => ip.ToString().Contains("192")).ToList()[^1];
         Console.WriteLine($"Optical Flow: {OpticalFlow.GetType().Name} | Backlog: {OpticalFlow.Backlog} | Gpu: {OpticalFlow.IsGpuMat} | Host: {hostAddress}");
 
+        if (!CudaInvoke.HasCuda && OpticalFlow.IsGpuMat)
+        {
+            throw new Exception("Emgu.CV cuda runtime is not present. Please recompile using the cuda runtime or switch to a CPU implemented OpticalFlow.");
+        }
+        
         _remoteState = new RemoteState(hostAddress);
         new Thread(() => _remoteState.StartListening()).Start();
         
