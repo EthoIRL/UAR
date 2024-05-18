@@ -7,7 +7,7 @@ using Emgu.CV;
 using Emgu.CV.Cuda;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
-using UAR.OpticalFlow;
+using UAR.Modules;
 
 namespace UAR;
 
@@ -21,7 +21,7 @@ static class Program
     private static GpuMat? _gpuImage;
     private static int _hasFrames;
 
-    private static readonly PyrLkOpticalFlow OpticalFlow = new(4);
+    private static readonly PyrLkOpticalModule OpticalModule = new(4);
     private static readonly ScreenCapturer ScreenCapturer = new(0, 0, Resolution.width, Resolution.height);
 
     private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -37,11 +37,11 @@ static class Program
     static void Main(string[] args)
     {
         var hostAddress = Dns.GetHostEntry(Dns.GetHostName()).AddressList.Where(ip => ip.ToString().Contains("192")).ToList()[^1];
-        Console.WriteLine($"Optical Flow: {OpticalFlow.GetType().Name} | Backlog: {OpticalFlow.Backlog} | Gpu: {OpticalFlow.IsGpuMat} | Host: {hostAddress}");
+        Console.WriteLine($"Optical Flow: {OpticalModule.GetType().Name} | Backlog: {OpticalModule.Backlog} | Gpu: {OpticalModule.IsGpuMat} | Host: {hostAddress}");
 
-        if (!CudaInvoke.HasCuda && OpticalFlow.IsGpuMat)
+        if (!CudaInvoke.HasCuda && OpticalModule.IsGpuMat)
         {
-            throw new Exception("Emgu.CV cuda runtime is not present. Please recompile using the cuda runtime or switch to a CPU implemented OpticalFlow.");
+            throw new Exception("Emgu.CV cuda runtime is not present. Please recompile using the cuda runtime or switch to a CPU implemented OpticalModule.");
         }
         
         _remoteState = new RemoteState(hostAddress);
@@ -57,27 +57,27 @@ static class Program
 
     public static void HandleImage()
     {
-        if (OpticalFlow.IsGpuMat)
+        if (OpticalModule.IsGpuMat)
         {
             _gpuImage ??= new();
             
             _gpuImage.Upload(LocalImage);
-            CudaInvoke.CvtColor(_gpuImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
+            CudaInvoke.CvtColor(_gpuImage, OpticalModule.FrameBuffer[^1], ColorConversion.Bgra2Gray);
         }
         else
         {
-            CvInvoke.CvtColor(LocalImage, OpticalFlow.FrameBuffer[^1], ColorConversion.Bgra2Gray);
+            CvInvoke.CvtColor(LocalImage, OpticalModule.FrameBuffer[^1], ColorConversion.Bgra2Gray);
         }
 
-        OpticalFlow.AddFrame(OpticalFlow.FrameBuffer[^1]);
+        OpticalModule.AddFrame(OpticalModule.FrameBuffer[^1]);
 
-        if (_hasFrames < OpticalFlow.Backlog)
+        if (_hasFrames < OpticalModule.Backlog)
         {
             _hasFrames++;
             return;
         }
         
-        var flow = OpticalFlow.FindMovementFromFlow();
+        var flow = OpticalModule.FindMovementFromFlow();
 
         if (flow != null && (_remoteState.LeftButton && _remoteState.RightButton || _allowBypass))
         {
@@ -91,8 +91,8 @@ static class Program
         }
         else
         {
-            OpticalFlow.OverflowX = 0;
-            OpticalFlow.OverflowY = 0;
+            OpticalModule.OverflowX = 0;
+            OpticalModule.OverflowY = 0;
         }
 
         _remoteState.X = 0;

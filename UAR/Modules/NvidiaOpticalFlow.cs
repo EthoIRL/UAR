@@ -1,9 +1,9 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Cuda;
 
-namespace UAR.OpticalFlow;
+namespace UAR.Modules;
 
-public class NvidiaOpticalFlow : GenericOpticalFlow<GpuMat>
+public class NvidiaOpticalModule : GenericOpticalModule<GpuMat>
 {
     private NvidiaOpticalFlow_2_0? _nvopf;
     
@@ -30,12 +30,17 @@ public class NvidiaOpticalFlow : GenericOpticalFlow<GpuMat>
         double avgX = matrixSplit[0].Sum / (_flowMat.Rows * _flowMat.Cols);
         double avgY = matrixSplit[1].Sum / (_flowMat.Rows * _flowMat.Cols);
 
+        // if (avgY is < 2.5 and > 0)
+        // {
+        //      avgY *= -1;
+        // }
+        
         var intAvg = HandleOverflow(avgX, avgY);
 
         return (-intAvg.x, -intAvg.y);
     }
 
-    public NvidiaOpticalFlow(int frameBacklog) : base(frameBacklog)
+    public NvidiaOpticalModule(int frameBacklog) : base(frameBacklog)
     {
     }
 }

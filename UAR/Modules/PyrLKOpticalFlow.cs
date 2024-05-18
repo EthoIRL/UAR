@@ -5,9 +5,9 @@ using Emgu.CV.Features2D;
 using Emgu.CV.Structure;
 using Size = System.Drawing.Size;
 
-namespace UAR.OpticalFlow;
+namespace UAR.Modules;
 
-public class PyrLkOpticalFlow : GenericOpticalFlow<Mat>
+public class PyrLkOpticalModule : GenericOpticalModule<Mat>
 {
     private readonly FastFeatureDetector _detector = new(100);
 
@@ -48,20 +48,25 @@ public class PyrLkOpticalFlow : GenericOpticalFlow<Mat>
             }
             
             divisor++;
-        
             totalX += secondFeatures[i].X - prevCorners[i].X;
             totalY += secondFeatures[i].Y - prevCorners[i].Y;
         }
         
         var avgX = totalX / divisor;
         var avgY = totalY / divisor;
+        
+        
 
         var intAvg = HandleOverflow(avgX, avgY);
+        if (intAvg.y < -8)
+        {
+            intAvg.y = 0;
+        }
         
         return (intAvg.x, intAvg.y);
     }
 
-    public PyrLkOpticalFlow(int frameBacklog) : base(frameBacklog)
+    public PyrLkOpticalModule(int frameBacklog) : base(frameBacklog)
     {
     }
 }

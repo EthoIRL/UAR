@@ -1,8 +1,8 @@
 ﻿using Emgu.CV.Cuda;
 
-namespace UAR.OpticalFlow;
+namespace UAR.Modules;
 
-public abstract class GenericOpticalFlow<T> where T : class, new()
+public abstract class GenericOpticalModule<T> where T : class, new()
 {
     public readonly T[] FrameBuffer;
     public readonly int Backlog;
@@ -12,7 +12,7 @@ public abstract class GenericOpticalFlow<T> where T : class, new()
     public double OverflowX;
     public double OverflowY;
 
-    protected GenericOpticalFlow(int frameBacklog = 2)
+    protected GenericOpticalModule(int frameBacklog = 2)
     {
         Backlog = frameBacklog;
         FrameBuffer = new T[frameBacklog];
