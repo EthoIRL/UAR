@@ -7,15 +7,12 @@ namespace UAR.Modules;
 public class BfMatching : GenericOpticalModule<Mat>
 {
     private readonly ORB _detector = new(50);
-    
+
     private readonly BFMatcher _bfMatcher = new(DistanceType.Hamming2, true);
 
-    private readonly VectorOfKeyPoint _firstKeyPoints = new();
-    private readonly VectorOfKeyPoint _secondKeyPoints = new();
+    private Mat?[]? _descriptorBuffer;
+    private VectorOfKeyPoint[]? _keypointBuffer;
 
-    private readonly Mat _firstDescriptor = new();
-    private readonly Mat _secondDescriptor = new();
-    
     private readonly VectorOfDMatch _matches = new();
 
     private readonly float _minimumResponse = 0.0005f;
@@ -23,34 +20,44 @@ public class BfMatching : GenericOpticalModule<Mat>
 
     public (int x, int y)? FindMovementFromFlow()
     {
+        _descriptorBuffer ??= new Mat[Backlog];
+        _keypointBuffer ??= new VectorOfKeyPoint[Backlog];
+
         var first = FrameBuffer[0];
-        var second = FrameBuffer[^1];
 
-        _detector.DetectAndCompute(first, null, _firstKeyPoints, _firstDescriptor, false);
-        _detector.DetectAndCompute(second, null, _secondKeyPoints, _secondDescriptor, false);
+        var firstKeyPoints = new VectorOfKeyPoint();
+        var firstDescriptor = new Mat();
 
-        if (_firstKeyPoints.Size == 0 || _secondKeyPoints.Size == 0)
+        _detector.DetectAndCompute(first, null, firstKeyPoints, firstDescriptor, false);
+
+        var secondKeyPoints = _keypointBuffer[^1];
+        var secondDescriptor = _descriptorBuffer[^1];
+
+        AddToAndShift(_descriptorBuffer, firstDescriptor);
+        AddToAndShift(_keypointBuffer, firstKeyPoints);
+
+        if (secondDescriptor == null || firstKeyPoints.Size == 0 || secondKeyPoints.Size == 0)
         {
             return null;
         }
 
-        _bfMatcher.Match(_firstDescriptor, _secondDescriptor, _matches);
+        _bfMatcher.Match(firstDescriptor, secondDescriptor, _matches);
 
         double totalX = 0;
         double totalY = 0;
         int divisor = 1;
-        
+
         for (int i = 0; i < _matches.Size; i++)
         {
             var match = _matches[i];
 
-            if (match.Distance > _maximumDistance || _firstKeyPoints[match.QueryIdx].Response < _minimumResponse || _secondKeyPoints[match.TrainIdx].Response < _minimumResponse)
+            if (match.Distance > _maximumDistance || firstKeyPoints[match.QueryIdx].Response < _minimumResponse || secondKeyPoints[match.TrainIdx].Response < _minimumResponse)
             {
                 continue;
             }
-            
-            var firstP = _firstKeyPoints[match.QueryIdx].Point;
-            var secondP = _secondKeyPoints[match.TrainIdx].Point;
+
+            var firstP = firstKeyPoints[match.QueryIdx].Point;
+            var secondP = secondKeyPoints[match.TrainIdx].Point;
 
             divisor++;
             totalX += secondP.X - firstP.X;
@@ -63,6 +70,16 @@ public class BfMatching : GenericOpticalModule<Mat>
         var intAvg = HandleOverflow(avgX, avgY);
 
         return (-intAvg.x, -intAvg.y);
+    }
+
+    private void AddToAndShift<T>(T[] array, T item)
+    {
+        for (int i = Backlog - 1; i > 0; i--)
+        {
+            array[i] = array[i - 1];
+        }
+
+        array[0] = item;
     }
 
     public BfMatching(int frameBacklog) : base(frameBacklog)

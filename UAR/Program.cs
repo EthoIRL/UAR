@@ -83,6 +83,9 @@ static class Program
         {
             _allowBypass = !_allowBypass && TapFireFix;
             
+            //     Console.WriteLine($"X: {flow.Value.x}, Y: {flow.Value.y}");
+            // }
+
             short deltaX = (short) (flow.Value.x + _remoteState.X);
             short deltaY = (short) (flow.Value.y + _remoteState.Y);
 
