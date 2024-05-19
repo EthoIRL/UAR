@@ -8,7 +8,7 @@ public class BfMatching : GenericOpticalModule<Mat>
 {
     private readonly ORB _detector = new(50);
 
-    private readonly BFMatcher _bfMatcher = new(DistanceType.Hamming2, true);
+    private readonly BFMatcher _bfMatcher = new(DistanceType.Hamming, true);
 
     private Mat?[]? _descriptorBuffer;
     private VectorOfKeyPoint[]? _keypointBuffer;
