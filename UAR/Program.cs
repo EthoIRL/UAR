@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -17,7 +18,7 @@ static class Program
 
     private static readonly Image<Bgra, byte> LocalImage = new(Resolution.width, Resolution.height);
     private static IntPtr _imageData;
-    
+
     private static GpuMat? _gpuImage;
     private static int _hasFrames;
 
@@ -33,6 +34,13 @@ static class Program
     private static readonly bool TapFireFix = false;
     private static bool _allowBypass;
 
+    private static readonly bool WaitForAim = true;
+    private static readonly int WaitMs = 250;
+    private static readonly Stopwatch Aimwatch = new();
+
+    private static bool _lastLeftButton;
+    private static bool _lastRightButton;
+
     [SupportedOSPlatform("windows")]
     static void Main(string[] args)
     {
@@ -43,10 +51,10 @@ static class Program
         {
             throw new Exception("Emgu.CV cuda runtime is not present. Please recompile using the cuda runtime or switch to a CPU implemented OpticalModule.");
         }
-        
+
         _remoteState = new RemoteState(hostAddress);
         new Thread(() => _remoteState.StartListening()).Start();
-        
+
         Socket.Connect(EndPoint);
 
         GCHandle pinnedArray = GCHandle.Alloc(LocalImage.Data, GCHandleType.Pinned);
@@ -60,7 +68,7 @@ static class Program
         if (OpticalModule.IsGpuMat)
         {
             _gpuImage ??= new();
-            
+
             _gpuImage.Upload(LocalImage);
             CudaInvoke.CvtColor(_gpuImage, OpticalModule.FrameBuffer[^1], ColorConversion.Bgra2Gray);
         }
@@ -76,27 +84,35 @@ static class Program
             _hasFrames++;
             return;
         }
-        
+
         var flow = OpticalModule.FindMovementFromFlow();
 
         if (flow != null && (_remoteState.LeftButton && _remoteState.RightButton || _allowBypass))
         {
             _allowBypass = !_allowBypass && TapFireFix;
-            
-            //     Console.WriteLine($"X: {flow.Value.x}, Y: {flow.Value.y}");
-            // }
 
-            short deltaX = (short) (flow.Value.x + _remoteState.X);
-            short deltaY = (short) (flow.Value.y + _remoteState.Y);
+            if (!_lastLeftButton || !_lastRightButton)
+            {
+                Aimwatch.Restart();
+            }
 
-            var data = PreparePacket(deltaX, deltaY);
-            Socket.Send(data);
+            if (Aimwatch.ElapsedMilliseconds > WaitMs && WaitForAim || !WaitForAim || _allowBypass)
+            {
+                short deltaX = (short) (flow.Value.x + _remoteState.X);
+                short deltaY = (short) (flow.Value.y + _remoteState.Y);
+                
+                var data = PreparePacket(deltaX, deltaY);
+                Socket.Send(data);
+            }
         }
         else
         {
             OpticalModule.OverflowX = 0;
             OpticalModule.OverflowY = 0;
         }
+
+        _lastLeftButton = _remoteState.LeftButton;
+        _lastRightButton = _remoteState.RightButton;
 
         _remoteState.X = 0;
         _remoteState.Y = 0;
