@@ -26,7 +26,7 @@ static class Program
     private static readonly ScreenCapturer ScreenCapturer = new(0, 0, Resolution.width, Resolution.height);
 
     private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-    private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.68.53");
+    private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.68.56");
     private static readonly IPEndPoint EndPoint = new(Broadcast, 7483);
 
     private static RemoteState _remoteState = null!;
@@ -34,7 +34,7 @@ static class Program
     private static readonly bool TapFireFix = false;
     private static bool _allowBypass;
 
-    private static readonly bool WaitForAim = true;
+    private static readonly bool WaitForAim = false;
     private static readonly int WaitMs = 250;
     private static readonly Stopwatch Aimwatch = new();
 
@@ -74,7 +74,7 @@ static class Program
         }
         else
         {
-            CvInvoke.CvtColor(LocalImage, OpticalModule.FrameBuffer[^1], ColorConversion.Bgra2Gray);
+            CvInvoke.CvtColor(LocalImage, OpticalModule.FrameBuffer[^1], OpticalModule.UseFullColor ? ColorConversion.Bgra2Bgr : ColorConversion.Bgra2Gray);
         }
 
         OpticalModule.AddFrame(OpticalModule.FrameBuffer[^1]);

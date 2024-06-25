@@ -8,6 +8,7 @@ public abstract class GenericOpticalModule<T> where T : class, new()
     public readonly int Backlog;
 
     public readonly bool IsGpuMat;
+    public bool UseFullColor;
 
     public double OverflowX;
     public double OverflowY;

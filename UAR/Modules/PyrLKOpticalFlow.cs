@@ -54,8 +54,6 @@ public class PyrLkOpticalModule : GenericOpticalModule<Mat>
         
         var avgX = totalX / divisor;
         var avgY = totalY / divisor;
-        
-        
 
         var intAvg = HandleOverflow(avgX, avgY);
         if (intAvg.y < -8)
