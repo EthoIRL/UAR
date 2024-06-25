@@ -40,7 +40,6 @@ public class ScreenCapturer
         Int32 width = output1.Description.DesktopBounds.Right - output1.Description.DesktopBounds.Left;
         Int32 height = output1.Description.DesktopBounds.Bottom - output1.Description.DesktopBounds.Top;
 
-        int centerWidth = width / 2 - _outputWidth / 2;
         int centerHeight = height / 2 - _outputHeight / 2;
 
         Texture2DDescription texture2DDescription = new Texture2DDescription
