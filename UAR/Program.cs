@@ -25,12 +25,6 @@ static class Program
     private static readonly PyrLkOpticalModule OpticalModule = new(4);
     private static readonly ScreenCapturer ScreenCapturer = new(0, 0, Resolution.width, Resolution.height);
 
-    private static readonly Socket Socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-    private static readonly IPAddress Broadcast = IPAddress.Parse("192.168.68.56");
-    private static readonly IPEndPoint EndPoint = new(Broadcast, 7483);
-
-    private static RemoteState _remoteState = null!;
-
     private static readonly bool TapFireFix = false;
     private static bool _allowBypass;
 
@@ -40,6 +34,13 @@ static class Program
 
     private static bool _lastLeftButton;
     private static bool _lastRightButton;
+
+    //
+    // Provide your own mouse controlling system
+    // 
+    private static readonly Socket MouseSocket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+    private static readonly IPEndPoint ControllerEndPoint = new(IPAddress.Parse("192.168.68.56"), 7483);
+    private static RemoteState _remoteState = null!;
 
     [SupportedOSPlatform("windows")]
     static void Main(string[] args)
@@ -55,7 +56,7 @@ static class Program
         _remoteState = new RemoteState(hostAddress);
         new Thread(() => _remoteState.StartListening()).Start();
 
-        Socket.Connect(EndPoint);
+        MouseSocket.Connect(ControllerEndPoint);
 
         GCHandle pinnedArray = GCHandle.Alloc(LocalImage.Data, GCHandleType.Pinned);
         _imageData = pinnedArray.AddrOfPinnedObject();
@@ -100,9 +101,9 @@ static class Program
             {
                 short deltaX = (short) (flow.Value.x + _remoteState.X);
                 short deltaY = (short) (flow.Value.y + _remoteState.Y);
-                
-                var data = PreparePacket(deltaX, deltaY);
-                Socket.Send(data);
+
+                var mousePacket = PreparePacket(deltaX, deltaY);
+                MouseSocket.Send(mousePacket);
             }
         }
         else
