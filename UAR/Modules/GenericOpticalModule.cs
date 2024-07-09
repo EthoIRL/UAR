@@ -13,6 +13,9 @@ public abstract class GenericOpticalModule<T> where T : class, new()
     public double OverflowX;
     public double OverflowY;
 
+    internal double _lastAvgX;
+    internal double _lastAvgY;
+
     protected GenericOpticalModule(int frameBacklog = 2)
     {
         Backlog = frameBacklog;
@@ -54,5 +57,10 @@ public abstract class GenericOpticalModule<T> where T : class, new()
         OverflowY += y - intAvgY;
     
         return (intAvgX, intAvgY);
+    }
+    
+    protected bool SameSign(double value1, double value2)
+    {
+        return value1 > 0 && value2 > 0 || value1 < 0 && value2 < 0;
     }
 }
