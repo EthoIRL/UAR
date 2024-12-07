@@ -35,6 +35,19 @@ public class NvidiaOpticalModule : GenericOpticalModule<GpuMat>
         //      avgY *= -1;
         // }
         
+        if (SameSign(avgX, _lastAvgX))
+        {
+            avgX += _lastAvgX;
+        }
+        
+        if (SameSign(avgY, _lastAvgY))
+        {
+            avgY += _lastAvgY;
+        }
+        
+        _lastAvgX = (matrixSplit[0].Sum / (_flowMat.Rows * _flowMat.Cols)) * 1.2;
+        _lastAvgY = (matrixSplit[0].Sum / (_flowMat.Rows * _flowMat.Cols)) * 1.2;
+        
         var intAvg = HandleOverflow(avgX, avgY);
 
         return (-intAvg.x, -intAvg.y);
