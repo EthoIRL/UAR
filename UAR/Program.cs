@@ -37,10 +37,10 @@ static class Program
 
     //
     // Provide your own mouse controlling system
-    // 
+    //
     private static readonly Socket MouseSocket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-    private static readonly IPEndPoint ControllerEndPoint = new(IPAddress.Parse("192.168.68.56"), 7483);
-    private static RemoteState _remoteState = null!;
+    private static readonly IPEndPoint ControllerEndPoint = new(IPAddress.Parse("192.168.68.54"), 7483);
+    public static RemoteState _remoteState = null!;
 
     [SupportedOSPlatform("windows")]
     static void Main(string[] args)
@@ -122,22 +122,9 @@ static class Program
 
     private static byte[] PreparePacket(short deltaX, short deltaY, bool ignoreAim = false, bool left = false, bool right = false, bool middle = false)
     {
-        FromShort(deltaX, out var byte1, out var byte2);
-        FromShort(deltaY, out var byte3, out var byte4);
-
         return new[]
         {
-            byte1, byte2, byte3, byte4,
-            (byte) (ignoreAim ? 1 : 0),
-            (byte) (left ? 1 : 0),
-            (byte) (right ? 1 : 0),
-            (byte) (middle ? 1 : 0)
+            (byte) (deltaX & 0xFF), (byte) (deltaX >> 8), (byte) (deltaY & 0xFF), (byte) (deltaY >> 8)
         };
-    }
-
-    private static void FromShort(short number, out byte byte1, out byte byte2)
-    {
-        byte2 = (byte) (number >> 8);
-        byte1 = (byte) (number >> 0);
     }
 }
