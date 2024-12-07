@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using SharpDX;
@@ -19,7 +19,7 @@ public class ScreenCapturer
     private static int _displayIndex;
     private static int _outputWidth;
     private static int _outputHeight;
-    
+
     public ScreenCapturer(int adapterIndex, int displayIndex, int outputWidth, int outputHeight)
     {
         _adapterIndex = adapterIndex;
@@ -27,7 +27,7 @@ public class ScreenCapturer
         _outputWidth = outputWidth;
         _outputHeight = outputHeight;
     }
-    
+
 
     public void StartCapture(IntPtr imgDataPtr, int widthStep)
     {
@@ -65,12 +65,15 @@ public class ScreenCapturer
 
         DataBox dataBox = device.ImmediateContext.MapSubresource(texture2D, 0, MapMode.Read, MapFlags.None);
 
-        ResourceRegion resourceRegion = new ResourceRegion(0, centerHeight, 0, width + _outputWidth, height+centerHeight, 1);
-        
+        ResourceRegion resourceRegion = new ResourceRegion(0, centerHeight, 0, width + _outputWidth, height + centerHeight, 1);
+
         var heightPartitioner = Partitioner.Create(0, _outputHeight);
-        
+
         bool previousState = false;
-        
+
+        Texture2D texturePtr = null!;
+        bool firstRun = true;
+
         int bytesPerPixel = _outputWidth * 4;
 
         while (true)
@@ -90,8 +93,14 @@ public class ScreenCapturer
                 continue;
             }
 
-            var screenTexture2D = screenResource.QueryInterface<Texture2D>();
-            device.ImmediateContext.CopySubresourceRegion(screenTexture2D, 0, resourceRegion, texture2D, 0);
+            if (firstRun)
+            {
+                screenResource.QueryInterface(typeof(Texture2D).GUID, out var screenPtr);
+                texturePtr = CppObject.FromPointer<Texture2D>(screenPtr);
+                firstRun = false;
+            }
+
+            device.ImmediateContext.CopySubresourceRegion(texturePtr, 0, resourceRegion, texture2D, 0);
 
             Parallel.ForEach(heightPartitioner, range =>
             {
@@ -104,11 +113,10 @@ public class ScreenCapturer
                 }
             });
 
-            screenTexture2D.Dispose();
             screenResource.Dispose();
 
             Program.HandleImage();
-            
+
             ScWatch.Stop();
             if (!ScWatch.IsRunning)
             {
